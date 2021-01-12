@@ -46,8 +46,8 @@ If you want to do it right,
 it's still not so clear where exactly this should be implemented.
 Long time ago (2010),
 I implemented a patch for xf86-input-mouse ([here](https://bugs.freedesktop.org/show_bug.cgi?id=29905)).
-This code used the same acceleration code and logic
-from the mouse cursor movement acceleration.
+This code used a similar acceleration logic
+as the mouse cursor movement acceleration.
 In Xorg/X11, you get discrete button press events for scroll events,
 which made it a bit ugly.
 The discussion was mostly about whether this is useful at all,
