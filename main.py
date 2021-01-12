@@ -2,7 +2,7 @@
 
 import better_exchook
 import sys
-from pynput.mouse import Button, Controller, Listener
+from pynput.mouse import Controller, Listener
 
 
 class Main:
@@ -43,6 +43,3 @@ if __name__ == '__main__':
   except KeyboardInterrupt:
     print("KeyboardInterrupt")
     sys.exit(1)
-
-
-
