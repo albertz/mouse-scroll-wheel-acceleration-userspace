@@ -17,18 +17,29 @@ class ScrollEvent:
     self.delta = (dx, dy)
 
 
-class Main:
-  _DiscreteScrollEvents = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-  _MaxKeepScrollEvents = 10
-  _VelocityEstimateMaxDeltaTime = .5
-  _MaxMultiplier = 100
+def sign(v: Union[float, int]) -> int:
+  if v < 0:
+    return -1
+  if v > 0:
+    return 1
+  return 0
 
-  def __init__(self, accel_factor: float = 1., accel_factor_exp: float = 1.):
-    self.accel_factor = accel_factor
-    self.accel_factor_exp = accel_factor_exp
+
+class ScrollAccelerator:
+  _DiscreteScrollEvents = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+  _MaxKeepScrollEvents = 1000
+  _VelocityEstimateMaxDeltaTime = .5
+  _MaxMultiplier = 500
+
+  def __init__(self, multiplier: float = 1., exp: float = 0.):
+    if multiplier <= 1. and exp <= 0.:
+      logging.warning(f"Not using acceleration with multiplier {multiplier} and exp {exp}")
+    self.accel_factor = multiplier
+    self.accel_factor_exp = exp
     self.mouse = Controller()
     self.listener = Listener(on_scroll=self._on_scroll)
     self._ignore_next_scroll_event = 0
+    self._ignore_next_scroll_event_delta = (0, 0)
     self._scroll_events = []  # type: List[ScrollEvent]
     self._discrete_scroll_events = True  # whether scroll events are always discrete
 
@@ -42,12 +53,21 @@ class Main:
     if self._discrete_scroll_events and abs(dx) < 1 and abs(dy) < 1:
       return
     self._ignore_next_scroll_event += (abs(dx) + abs(dy)) if self._discrete_scroll_events else 1
+    self._scroll_events.append(ScrollEvent(*self.mouse.position, dx, dy))
+    if self._discrete_scroll_events:
+      assert (dx or dy) and (not (dx and dy))
+      self._ignore_next_scroll_event_delta = (sign(dx), sign(dy))
+    else:
+      self._ignore_next_scroll_event_delta = (dx, dy)
     self.mouse.scroll(dx, dy)
 
   def _on_scroll(self, x: int, y: int, dx: int, dy: int):
     if self._ignore_next_scroll_event > 0:
-      self._ignore_next_scroll_event -= 1
-      return
+      if (dx, dy) != self._ignore_next_scroll_event_delta:
+        pass  # let this pass
+      else:
+        self._ignore_next_scroll_event -= 1
+        return
     logging.debug(f"on scroll {(x, y)} {(dx, dy)}")
     if (dx, dy) not in self._DiscreteScrollEvents:
       self._discrete_scroll_events = False
@@ -57,7 +77,7 @@ class Main:
     # accelerate
     m = self._acceleration_scheme_get_scroll_multiplier()
     if m > 1:
-      logging.info(f"scroll acceleration multiplier: {m}")
+      logging.info(f"scroll acceleration multiplier {m:.2f} -> scroll ({dx * m:.2f}, {dy * m:.2f})")
       if m > self._MaxMultiplier:
         m = self._MaxMultiplier
       m -= 1  # already one scroll event was processed
@@ -67,12 +87,23 @@ class Main:
     # Very simple: Just count, but max up to _VelocityEstimateMaxDeltaTime sec.
     cur_time = time.time()
     dx, dy = 0, 0
+    dx_sign_change = False
+    dy_sign_change = False
     count = 0
     for ev in reversed(self._scroll_events):
       if cur_time - ev.time > self._VelocityEstimateMaxDeltaTime:
         break
-      dx += ev.delta[0]
-      dy += ev.delta[1]
+      dx_, dy_ = ev.delta
+      if dx_sign_change or (dx and dx_ and sign(dx) != sign(dx_)):
+        dx_sign_change = True
+        dx = dx_ = 0
+      if dy_sign_change or (dy and dy_ and sign(dy) != sign(dy_)):
+        dy_sign_change = True
+        dy = dy_ = 0
+      if dx_sign_change and dy_sign_change:
+        break
+      dx += dx_
+      dy += dy_
       count += 1
     if count == 0:
       return 0., 0.
@@ -99,13 +130,13 @@ def main():
   arg_parser = argparse.ArgumentParser()
   arg_parser.add_argument(
     '-v', '--verbose', action='count', default=0, help="logging level. can be given multiple times")
-  arg_parser.add_argument("--multiplier", type=float, default=1.)
-  arg_parser.add_argument("--exp", type=float, default=2.)
+  arg_parser.add_argument("--multiplier", type=float, default=1., help="Linear factor, default 1.")
+  arg_parser.add_argument("--exp", type=float, default=0., help="Exponential factor. Try 0.8 or so.")
   args = arg_parser.parse_args()
   logging.basicConfig(
     level=max(1, logging.WARNING - args.verbose * 10),
     format='%(asctime)s %(levelname)s: %(message)s')
-  app = Main(accel_factor=args.multiplier, accel_factor_exp=args.exp)
+  app = ScrollAccelerator(multiplier=args.multiplier, exp=args.exp)
   app.join()
 
 
