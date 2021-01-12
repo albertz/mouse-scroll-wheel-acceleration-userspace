@@ -2,8 +2,10 @@
 
 import better_exchook
 import sys
+import argparse
 import time
 import math
+import logging
 from typing import List, Tuple, Union
 from pynput.mouse import Controller, Listener
 
@@ -21,10 +23,11 @@ class Main:
   _VelocityEstimateMaxDeltaTime = .5
   _MaxMultiplier = 100
 
-  def __init__(self, accel_factor: float = 1.):
+  def __init__(self, accel_factor: float = 1., accel_factor_exp: float = 1.):
+    self.accel_factor = accel_factor
+    self.accel_factor_exp = accel_factor_exp
     self.mouse = Controller()
     self.listener = Listener(on_scroll=self._on_scroll)
-    self.accel_factor = accel_factor
     self._ignore_next_scroll_event = 0
     self._scroll_events = []  # type: List[ScrollEvent]
     self._discrete_scroll_events = True  # whether scroll events are always discrete
@@ -45,7 +48,7 @@ class Main:
     if self._ignore_next_scroll_event > 0:
       self._ignore_next_scroll_event -= 1
       return
-    print("on scroll", (x, y), (dx, dy))
+    logging.debug(f"on scroll {(x, y)} {(dx, dy)}")
     if (dx, dy) not in self._DiscreteScrollEvents:
       self._discrete_scroll_events = False
     self._scroll_events.append(ScrollEvent(x, y, dx, dy))
@@ -54,7 +57,7 @@ class Main:
     # accelerate
     m = self._acceleration_scheme_get_scroll_multiplier()
     if m > 1:
-      print("scroll acceleration multiplier:", m)
+      logging.info(f"scroll acceleration multiplier: {m}")
       if m > self._MaxMultiplier:
         m = self._MaxMultiplier
       m -= 1  # already one scroll event was processed
@@ -75,27 +78,35 @@ class Main:
       return 0., 0.
     d = 1. / self._VelocityEstimateMaxDeltaTime
     if d > 1:
-      # With too less events, do not increase the estimate.
-      d = 1 + min(d - 1, (count - 1) * 0.5)
+      d = 1  # do not increase the estimate
     return float(dx) * d, float(dy) * d
 
   def _acceleration_scheme_get_scroll_multiplier(self) -> Union[int, float]:
     vel_x, vel_y = self._estimate_current_scroll_velocity()
     abs_vel = math.sqrt(vel_x * vel_x + vel_y * vel_y)
-    print("Estimated scroll velocity:", abs_vel)
+    logging.debug(f"Estimated scroll velocity: {abs_vel}")
     if vel_x == vel_y == 0:
       return 1
     if abs_vel <= 1:
       return 1
 
     # Exponential scheme.
-    m = abs_vel ** self.accel_factor
-    assert m >= 1
-    return m
+    m = abs_vel ** self.accel_factor_exp
+    return m * self.accel_factor
 
 
 def main():
-  Main().join()
+  arg_parser = argparse.ArgumentParser()
+  arg_parser.add_argument(
+    '-v', '--verbose', action='count', default=0, help="logging level. can be given multiple times")
+  arg_parser.add_argument("--multiplier", type=float, default=1.)
+  arg_parser.add_argument("--exp", type=float, default=2.)
+  args = arg_parser.parse_args()
+  logging.basicConfig(
+    level=max(1, logging.WARNING - args.verbose * 10),
+    format='%(asctime)s %(levelname)s: %(message)s')
+  app = Main(accel_factor=args.multiplier, accel_factor_exp=args.exp)
+  app.join()
 
 
 if __name__ == '__main__':
