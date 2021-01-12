@@ -130,12 +130,21 @@ def main():
   arg_parser = argparse.ArgumentParser()
   arg_parser.add_argument(
     '-v', '--verbose', action='count', default=0, help="logging level. can be given multiple times")
-  arg_parser.add_argument("--multiplier", type=float, default=1., help="Linear factor, default 1.")
-  arg_parser.add_argument("--exp", type=float, default=0., help="Exponential factor. Try 0.8 or so.")
+  arg_parser.add_argument("--multiplier", type=float, default=None, help="Linear factor, default 1.")
+  arg_parser.add_argument("--exp", type=float, default=None, help="Exponential factor. Try 0.8 or so.")
   args = arg_parser.parse_args()
   logging.basicConfig(
     level=max(1, logging.WARNING - args.verbose * 10),
     format='%(asctime)s %(levelname)s: %(message)s')
+  if args.multiplier is None and args.exp is None:
+    arg_parser.print_help()
+    print()
+    logging.error("Specify --multiplier and/or --exp.")
+    sys.exit(1)
+  if args.multiplier is None:
+    args.multiplier = 1.
+  if args.exp is None:
+    args.exp = 0.
   app = ScrollAccelerator(multiplier=args.multiplier, exp=args.exp)
   app.join()
 
