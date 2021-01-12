@@ -88,3 +88,14 @@ and also to send out further scroll events.
 
 It is written in a way that it might be cross platform
 (not really tested).
+
+
+# Installation
+
+    pip install -r requirements.txt
+
+# Usage
+
+Example:
+
+    ./main.py -v --exp 0.8
