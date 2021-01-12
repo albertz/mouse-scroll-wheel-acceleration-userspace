@@ -81,3 +81,10 @@ How?
 
 We can just send X events,
 and basically replicate the logic of my original xf86-input-mouse patch.
+
+This uses [pynput](https://pypi.org/project/pynput/)
+both to listen to scroll events,
+and also to send out further scroll events.
+
+It is written in a way that it might be cross platform
+(not really tested).
