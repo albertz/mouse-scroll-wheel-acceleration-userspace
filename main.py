@@ -77,10 +77,13 @@ class ScrollAccelerator:
     # accelerate
     m = self._acceleration_scheme_get_scroll_multiplier(abs_vel)
     if m > 1 and abs_vel * m > abs_vel_cur:
+      # Amount of scrolling to add to get to target speed.
+      scroll_x, scroll_y = vel_x * m - cur_vel_x, vel_y * m - cur_vel_y
       logging.info(
-        f"user velocity {abs_vel} -> scroll acceleration multiplier {m:.2f} -> scroll ({dx * m:.2f}, {dy * m:.2f})")
-      m -= 1  # already one scroll event was processed
-      self._scroll(dx * m, dy * m)
+        f"scroll user velocity {abs_vel}"
+        f" -> acceleration multiplier {m:.2f}, target velocity {abs_vel * m}"
+        f" -> scroll {scroll_x, scroll_y}")
+      self._scroll(scroll_x, scroll_y)
 
   def _estimate_current_scroll_velocity(self) -> Tuple[Tuple[float, float], Tuple[float, float]]:
     """
