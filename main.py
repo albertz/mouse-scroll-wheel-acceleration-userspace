@@ -42,7 +42,7 @@ class ScrollAccelerator:
     self._ignore_next_scroll_event = 0
     self._ignore_next_scroll_event_delta = (0, 0)
     self._scroll_events = []  # type: List[ScrollEvent]
-    self._discrete_scroll_events = True  # whether scroll events are always discrete
+    self._discrete_scroll_events = True  # whether (sent) scroll events are always discrete
 
   def join(self):
     self.listener.start()
@@ -74,8 +74,6 @@ class ScrollAccelerator:
         self._ignore_next_scroll_event -= 1
         return
     logging.debug(f"on scroll {(x, y)} {(dx, dy)}")
-    if (dx, dy) not in self._DiscreteScrollEvents:
-      self._discrete_scroll_events = False
     self._scroll_events.append(ScrollEvent(x, y, dx, dy))
     while len(self._scroll_events) > self._MaxKeepScrollEvents:
       del self._scroll_events[:1]
