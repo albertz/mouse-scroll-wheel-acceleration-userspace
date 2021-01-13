@@ -58,7 +58,9 @@ class ScrollAccelerator:
     if self._discrete_scroll_events:
       dx, dy = int(dx), int(dy)
     self._ignore_next_scroll_event += (abs(dx) + abs(dy)) if self._discrete_scroll_events else 1
-    self._scroll_events.append(ScrollEvent(*self.mouse.position, dx, dy))
+    # It's not exactly clear whether we should add the scroll event or not.
+    # This will influence and totally change the velocity estimation.
+    # self._scroll_events.append(ScrollEvent(*self.mouse.position, dx, dy))
     if self._discrete_scroll_events:
       assert (dx or dy) and (not (dx and dy))
       self._ignore_next_scroll_event_delta = (sign(dx), sign(dy))
