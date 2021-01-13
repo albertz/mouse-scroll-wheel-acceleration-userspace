@@ -8,6 +8,7 @@ import math
 import logging
 from typing import List, Tuple, Union
 from pynput.mouse import Controller, Listener
+import signal
 
 
 class ScrollEvent:
@@ -126,12 +127,18 @@ class ScrollAccelerator:
     return m * self.accel_factor
 
 
+def _timeout_handler(*_args):
+  logging.info("Timeout")
+  sys.exit(0)
+
+
 def main():
   arg_parser = argparse.ArgumentParser()
   arg_parser.add_argument(
     '-v', '--verbose', action='count', default=0, help="logging level. can be given multiple times")
   arg_parser.add_argument("--multiplier", type=float, default=None, help="Linear factor, default 1.")
   arg_parser.add_argument("--exp", type=float, default=None, help="Exponential factor. Try 0.8 or so.")
+  arg_parser.add_argument("--timeout", type=int, help="Will quite after this time (secs). For debugging.")
   args = arg_parser.parse_args()
   logging.basicConfig(
     level=max(1, logging.WARNING - args.verbose * 10),
@@ -145,6 +152,9 @@ def main():
     args.multiplier = 1.
   if args.exp is None:
     args.exp = 0.
+  if args.timeout:
+    signal.signal(signal.SIGALRM, _timeout_handler)
+    signal.alarm(args.timeout)
   app = ScrollAccelerator(multiplier=args.multiplier, exp=args.exp)
   app.join()
 
