@@ -30,7 +30,7 @@ class ScrollAccelerator:
   _DiscreteScrollEvents = [(0, 1), (0, -1), (1, 0), (-1, 0)]
   _MaxKeepScrollEvents = 1000
   _VelocityEstimateMaxDeltaTime = .5
-  _MaxMultiplier = 500
+  _MaxScrollDelta = 100
 
   def __init__(self, multiplier: float = 1., exp: float = 0.):
     if multiplier <= 1. and exp <= 0.:
@@ -53,6 +53,10 @@ class ScrollAccelerator:
       return
     if self._discrete_scroll_events and abs(dx) < 1 and abs(dy) < 1:
       return
+    dx = sign(dx) * min(abs(dx), self._MaxScrollDelta)
+    dy = sign(dy) * min(abs(dy), self._MaxScrollDelta)
+    if self._discrete_scroll_events:
+      dx, dy = int(dx), int(dy)
     self._ignore_next_scroll_event += (abs(dx) + abs(dy)) if self._discrete_scroll_events else 1
     self._scroll_events.append(ScrollEvent(*self.mouse.position, dx, dy))
     if self._discrete_scroll_events:
@@ -79,8 +83,6 @@ class ScrollAccelerator:
     m = self._acceleration_scheme_get_scroll_multiplier()
     if m > 1:
       logging.info(f"scroll acceleration multiplier {m:.2f} -> scroll ({dx * m:.2f}, {dy * m:.2f})")
-      if m > self._MaxMultiplier:
-        m = self._MaxMultiplier
       m -= 1  # already one scroll event was processed
       self._scroll(dx * m, dy * m)
 
