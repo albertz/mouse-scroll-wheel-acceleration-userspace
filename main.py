@@ -23,11 +23,15 @@ class ScrollEvent:
 class ScrollAccelerator:
   _DiscreteScrollEvents = [(0, 1), (0, -1), (1, 0), (-1, 0)]
   _VelocityEstimateMaxDeltaTime = 1.
-  _MaxScrollDelta = 100
+  _MaxScrollDelta = 100 if sys.platform != "darwin" else 1000
 
   def __init__(self, multiplier: float = 1., exp: float = 0.):
     if multiplier <= 1. and exp <= 0.:
       logging.warning(f"Not using acceleration with multiplier {multiplier} and exp {exp}")
+    elif sys.platform == "darwin":
+      logging.warning(
+        "On Darwin/MacOSX, the OS already does scroll acceleration. "
+        "You can use this tool in combination, but you might want to use lower values.")
     self.accel_factor = multiplier
     self.accel_factor_exp = exp
     self.mouse = Controller()
