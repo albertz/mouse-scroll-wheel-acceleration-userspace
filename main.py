@@ -79,7 +79,7 @@ class ScrollAccelerator:
     if m > 1 and abs_vel * m > abs_vel_cur:
       # Amount of scrolling to add to get to target speed.
       scroll_ = vel * m - cur_vel
-      logging.info(
+      (logging.debug if generated else logging.info)(
         f"scroll user vel {abs_vel}"
         f" -> accel multiplier {m:.2f}, cur vel {cur_vel}, target vel {abs_vel * m}"
         f" -> scroll {scroll_}")
