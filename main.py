@@ -34,7 +34,7 @@ class ScrollAccelerator:
     self.listener = Listener(on_scroll=self._on_scroll)
     self._scroll_events = []  # type: List[ScrollEvent]
     self._outstanding_generated_scrolls = Vec2()
-    self._discrete_scroll_events = True  # whether (sent) scroll events are always discrete
+    self._discrete_scroll_events = sys.platform.startswith("linux")  # whether (sent) scroll events are always discrete
 
   def join(self):
     self.listener.start()
@@ -42,8 +42,7 @@ class ScrollAccelerator:
 
   def _scroll(self, delta: Vec2):
     delta = delta.abs_cap(self._MaxScrollDelta)
-    if self._discrete_scroll_events:
-      delta = delta.round()
+    delta = delta.round()  # in any case, backends anyway use int
     if not delta:
       return
     if self._outstanding_generated_scrolls and self._outstanding_generated_scrolls.sign() != delta.sign():
@@ -65,15 +64,18 @@ class ScrollAccelerator:
     if self._discrete_scroll_events and delta not in self._DiscreteScrollEvents:
       generated = False
     if generated:
-      self._outstanding_generated_scrolls -= delta
+      new_outstanding = self._outstanding_generated_scrolls - delta
+      if new_outstanding.sign() != self._outstanding_generated_scrolls.sign():
+        new_outstanding = Vec2()
+      self._outstanding_generated_scrolls = new_outstanding
     self._scroll_events.append(ScrollEvent(pos, delta, generated=generated))
     vel, gen_vel = self._estimate_current_scroll_velocity(self._scroll_events[-1].time)
-    if not vel:
-      return
     cur_vel = vel + gen_vel
     abs_vel = vel.l2()
     abs_vel_cur = cur_vel.l2()
-    logging.debug(f"on scroll {(x, y)} {(dx, dy)}, gen {generated}, user vel {abs_vel}, cur vel {abs_vel_cur}")
+    logging.debug(
+      f"on scroll {(x, y)} {(dx, dy)}, gen {generated}, outstanding gen {self._outstanding_generated_scrolls},"
+      f" user vel {abs_vel}, cur vel {abs_vel_cur}")
     # accelerate
     m = self._acceleration_scheme_get_scroll_multiplier(abs_vel)
     if m > 1 and abs_vel * m > abs_vel_cur:
@@ -83,7 +85,8 @@ class ScrollAccelerator:
         f"scroll user vel {abs_vel}"
         f" -> accel multiplier {m:.2f}, cur vel {cur_vel}, target vel {abs_vel * m}"
         f" -> scroll {scroll_}")
-      time.sleep(0.001)  # enforce some minimal sleep time before the next generated scroll
+      if self._discrete_scroll_events:
+        time.sleep(0.001)  # enforce some minimal sleep time before the next generated scroll
       if self._discrete_scroll_events and scroll_.round():
         # Scroll only by one. Once we get the next scroll event from that, we will again trigger the next.
         self._scroll(scroll_.round().sign())
