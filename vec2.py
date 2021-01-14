@@ -58,6 +58,9 @@ class Vec2:
   def int(self) -> Vec2:
     return self.map(int)
 
+  def round(self) -> Vec2:
+    return self.map(round)
+
   def sign(self) -> Vec2:
     return self.map(sign)
 

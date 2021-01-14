@@ -43,7 +43,7 @@ class ScrollAccelerator:
   def _scroll(self, delta: Vec2):
     delta = delta.abs_cap(self._MaxScrollDelta)
     if self._discrete_scroll_events:
-      delta = delta.int()
+      delta = delta.round()
     if not delta:
       return
     if self._outstanding_generated_scrolls and self._outstanding_generated_scrolls.sign() != delta.sign():
@@ -70,7 +70,7 @@ class ScrollAccelerator:
     cur_vel = vel + gen_vel
     abs_vel = vel.l2()
     abs_vel_cur = cur_vel.l2()
-    logging.debug(f"on scroll {(x, y)} {(dx, dy)}, user velocity {abs_vel}, current velocity {abs_vel_cur}")
+    logging.debug(f"on scroll {(x, y)} {(dx, dy)}, gen {generated}, user vel {abs_vel}, cur vel {abs_vel_cur}")
     # accelerate
     m = self._acceleration_scheme_get_scroll_multiplier(abs_vel)
     if m > 1 and abs_vel * m > abs_vel_cur:
@@ -81,9 +81,9 @@ class ScrollAccelerator:
         f" -> accel multiplier {m:.2f}, cur vel {cur_vel}, target vel {abs_vel * m}"
         f" -> scroll {scroll_}")
       time.sleep(0.001)  # enforce some minimal sleep time before the next generated scroll
-      if self._discrete_scroll_events and scroll_.int():
+      if self._discrete_scroll_events and scroll_.round():
         # Scroll only by one. Once we get the next scroll event from that, we will again trigger the next.
-        self._scroll(scroll_.sign())
+        self._scroll(scroll_.round().sign())
       else:
         self._scroll(scroll_)
 
@@ -105,13 +105,15 @@ class ScrollAccelerator:
     del self._scroll_events[:start_idx]
     for ev in self._scroll_events:
       d_ = ev.delta
+      dt = cur_time - ev.time
+      weight = 1 - dt / self._VelocityEstimateMaxDeltaTime
       if d_.sign() != (d or gen or d_).sign():  # sign change
         d, gen = Vec2(), Vec2()
         continue
       if ev.generated:
-        gen += d_
+        gen += d_ * weight
       else:
-        d += d_
+        d += d_ * weight
     f = 1. / self._VelocityEstimateMaxDeltaTime
     if f > 1:
       f = 1  # do not increase the estimate
