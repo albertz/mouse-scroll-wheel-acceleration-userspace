@@ -39,6 +39,10 @@ class Vec2:
   def l2(self):
     if not self:
       return 0.0
+    if self.x and not self.y:
+      return abs(self.x)
+    if self.y and not self.x:
+      return abs(self.y)
     return math.sqrt(self.x * self.x + self.y * self.y)
 
   def map(self, func):
@@ -46,6 +50,8 @@ class Vec2:
 
   def binary_map(self, other, *, func):
     if not isinstance(other, Vec2):
+      if int(other) == other:
+        other = int(other)
       other = Vec2(other, other)
     return Vec2(func(self.x, other.x), func(self.y, other.y))
 
