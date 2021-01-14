@@ -22,7 +22,6 @@ class ScrollEvent:
 
 class ScrollAccelerator:
   _DiscreteScrollEvents = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-  _MaxKeepScrollEvents = 1000
   _VelocityEstimateMaxDeltaTime = 1.
   _MaxScrollDelta = 100
 
@@ -65,8 +64,6 @@ class ScrollAccelerator:
       self._outstanding_generated_scrolls -= delta
       generated = True
     self._scroll_events.append(ScrollEvent(pos, delta, generated=generated))
-    while len(self._scroll_events) > self._MaxKeepScrollEvents:
-      del self._scroll_events[:1]
     vel, gen_vel = self._estimate_current_scroll_velocity()
     if not vel:
       return
@@ -105,7 +102,8 @@ class ScrollAccelerator:
       if cur_time - ev.time > self._VelocityEstimateMaxDeltaTime:
         break
       start_idx -= 1
-    for ev in self._scroll_events[start_idx:]:
+    del self._scroll_events[:start_idx]
+    for ev in self._scroll_events:
       d_ = ev.delta
       if d_.sign() != (d or gen or d_).sign():  # sign change
         d, gen = Vec2(), Vec2()
