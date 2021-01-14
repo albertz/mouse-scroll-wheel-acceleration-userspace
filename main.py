@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
 import better_exchook
 import sys
 import argparse
 import time
-import math
+from vec2 import Vec2
 import logging
 from typing import List, Tuple, Union
 from pynput.mouse import Controller, Listener
@@ -12,19 +13,11 @@ import signal
 
 
 class ScrollEvent:
-  def __init__(self, x: int, y: int, dx: int, dy: int, generated: bool):
+  def __init__(self, pos: Vec2, delta: Vec2, generated: bool):
     self.time = time.time()
-    self.pos = (x, y)
-    self.delta = (dx, dy)
+    self.pos = pos
+    self.delta = delta
     self.generated = generated
-
-
-def sign(v: Union[float, int]) -> int:
-  if v < 0:
-    return -1
-  if v > 0:
-    return 1
-  return 0
 
 
 class ScrollAccelerator:
@@ -47,45 +40,44 @@ class ScrollAccelerator:
     self.listener.start()
     self.listener.join()
 
-  def _scroll(self, dx: Union[int, float], dy: Union[int, float]):
-    if dx == dy == 0:
-      return
-    if self._discrete_scroll_events and abs(dx) < 1 and abs(dy) < 1:
-      return
-    dx = sign(dx) * min(abs(dx), self._MaxScrollDelta)
-    dy = sign(dy) * min(abs(dy), self._MaxScrollDelta)
+  def _scroll(self, delta: Vec2):
+    delta = delta.abs_cap(self._MaxScrollDelta)
     if self._discrete_scroll_events:
-      dx, dy = int(dx), int(dy)
-    self._scroll_events.append(ScrollEvent(0, 0, dx, dy, generated=True))
-    self.mouse.scroll(dx, dy)
+      delta = delta.int()
+    if not delta:
+      return
+    self._scroll_events.append(ScrollEvent(Vec2(), delta, generated=True))
+    self.mouse.scroll(delta.x, delta.y)
 
   def _on_scroll(self, x: int, y: int, dx: int, dy: int):
     # We get user events and also generated events here,
     # but we do not distinguish them anymore.
     # However, we also kept track of how much scroll events we generated,
     # which allows us to estimate the user scroll velocity.
-    self._scroll_events.append(ScrollEvent(x, y, dx, dy, generated=False))
+    pos = Vec2(x, y)
+    delta = Vec2(dx, dy)
+    self._scroll_events.append(ScrollEvent(pos, delta, generated=False))
     while len(self._scroll_events) > self._MaxKeepScrollEvents:
       del self._scroll_events[:1]
-    (vel_x, vel_y), (gen_vel_x, gen_vel_y) = self._estimate_current_scroll_velocity()
-    if vel_x == vel_y == 0:
+    vel, gen_vel = self._estimate_current_scroll_velocity()
+    if not vel:
       return
-    cur_vel_x, cur_vel_y = vel_x + gen_vel_x, vel_y + gen_vel_y
-    abs_vel = math.sqrt(vel_x * vel_x + vel_y * vel_y)
-    abs_vel_cur = math.sqrt(cur_vel_x * cur_vel_x + cur_vel_y * cur_vel_y)
+    cur_vel = vel + gen_vel
+    abs_vel = vel.l2()
+    abs_vel_cur = cur_vel.l2()
     logging.debug(f"on scroll {(x, y)} {(dx, dy)}, user velocity {abs_vel}, current velocity {abs_vel_cur}")
     # accelerate
     m = self._acceleration_scheme_get_scroll_multiplier(abs_vel)
     if m > 1 and abs_vel * m > abs_vel_cur:
       # Amount of scrolling to add to get to target speed.
-      scroll_x, scroll_y = vel_x * m - cur_vel_x, vel_y * m - cur_vel_y
+      scroll_ = vel * m - cur_vel
       logging.info(
         f"scroll user velocity {abs_vel}"
         f" -> acceleration multiplier {m:.2f}, target velocity {abs_vel * m}"
-        f" -> scroll {scroll_x, scroll_y}")
-      self._scroll(scroll_x, scroll_y)
+        f" -> scroll {scroll_}")
+      self._scroll(scroll_)
 
-  def _estimate_current_scroll_velocity(self) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+  def _estimate_current_scroll_velocity(self) -> Tuple[Vec2, Vec2]:
     """
     We estimate the user speed, excluding generated scroll events,
     and separately only the generated scroll events.
@@ -95,37 +87,31 @@ class ScrollAccelerator:
     # Very simple: Just count, but max up to _VelocityEstimateMaxDeltaTime sec.
     # Once there is some sign flip, reset.
     cur_time = time.time()
-    dx, dy = 0, 0
-    gen_x, gen_y = 0, 0
+    d = Vec2()
+    gen = Vec2()
     start_idx = len(self._scroll_events)
     for ev in reversed(self._scroll_events):
       if cur_time - ev.time > self._VelocityEstimateMaxDeltaTime:
         break
       start_idx -= 1
     for ev in self._scroll_events[start_idx:]:
-      dx_, dy_ = ev.delta
-      if sign(dx_) != sign(dx or gen_x or dx_) or sign(dy_) != sign(dy or gen_y or dy_):  # sign change
-        dx, dy = 0, 0
-        gen_x, gen_y = 0, 0
-        dx_, dy_ = 0, 0
+      d_ = ev.delta
+      if d_.sign() != (d or gen or d_).sign():  # sign change
+        d = Vec2()
+        gen = Vec2()
+        d_ = Vec2()
       if ev.generated:
-        gen_x += dx_
-        gen_y += dy_
+        gen += d_
       else:
-        dx += dx_
-        dy += dy_
-    if abs(gen_x) >= abs(dx):  # not all generated events processed yet
-      dx = 0
+        d += d_
+    if gen.l1() >= d.l1():  # not all generated events processed yet
+      d = Vec2()
     else:
-      dx -= gen_x
-    if abs(gen_y) >= abs(dy):  # not all generated events processed yet
-      dy = 0
-    else:
-      dy -= gen_y
-    d = 1. / self._VelocityEstimateMaxDeltaTime
-    if d > 1:
-      d = 1  # do not increase the estimate
-    return (float(dx) * d, float(dy) * d), (float(gen_x) * d, float(gen_y) * d)
+      d -= gen
+    f = 1. / self._VelocityEstimateMaxDeltaTime
+    if f > 1:
+      f = 1  # do not increase the estimate
+    return d * f, gen * f
 
   def _acceleration_scheme_get_scroll_multiplier(self, abs_vel: float) -> Union[int, float]:
     if abs_vel <= 1:
