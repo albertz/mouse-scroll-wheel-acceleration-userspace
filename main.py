@@ -64,7 +64,7 @@ class ScrollAccelerator:
       self._outstanding_generated_scrolls -= delta
       generated = True
     self._scroll_events.append(ScrollEvent(pos, delta, generated=generated))
-    vel, gen_vel = self._estimate_current_scroll_velocity()
+    vel, gen_vel = self._estimate_current_scroll_velocity(self._scroll_events[-1].time)
     if not vel:
       return
     cur_vel = vel + gen_vel
@@ -86,7 +86,7 @@ class ScrollAccelerator:
       else:
         self._scroll(scroll_)
 
-  def _estimate_current_scroll_velocity(self) -> Tuple[Vec2, Vec2]:
+  def _estimate_current_scroll_velocity(self, cur_time: float) -> Tuple[Vec2, Vec2]:
     """
     We estimate the user speed, excluding generated scroll events,
     and separately only the generated scroll events.
@@ -95,7 +95,6 @@ class ScrollAccelerator:
     """
     # Very simple: Just count, but max up to _VelocityEstimateMaxDeltaTime sec.
     # Once there is some sign flip, reset.
-    cur_time = time.time()
     d, gen = Vec2(), Vec2()
     start_idx = len(self._scroll_events)
     for ev in reversed(self._scroll_events):
