@@ -1,6 +1,6 @@
 # Mouse scroll wheel acceleration, implemented in user space
 
-## Mouse scroll wheel acceleration
+## Background: Mouse scroll wheel acceleration
 
 What is that?
 
@@ -86,15 +86,16 @@ This uses [pynput](https://pypi.org/project/pynput/)
 both to listen to scroll events,
 and also to send out further scroll events.
 
-It is written in a way that it might be cross platform
-(not really tested).
+It is written in a way that it is cross platform.
+It even works on MacOSX in addition to the OS scroll acceleration,
+such that you can further increase the acceleration.
 
 
-# Installation
+## Installation
 
     pip install -r requirements.txt
 
-# Usage
+## Usage
 
 Example:
 
