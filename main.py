@@ -61,8 +61,11 @@ class ScrollAccelerator:
     delta = Vec2(dx, dy)
     generated = False
     if delta.sign() == self._outstanding_generated_scrolls.sign():
-      self._outstanding_generated_scrolls -= delta
       generated = True
+    if self._discrete_scroll_events and delta not in self._DiscreteScrollEvents:
+      generated = False
+    if generated:
+      self._outstanding_generated_scrolls -= delta
     self._scroll_events.append(ScrollEvent(pos, delta, generated=generated))
     vel, gen_vel = self._estimate_current_scroll_velocity(self._scroll_events[-1].time)
     if not vel:

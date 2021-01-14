@@ -51,6 +51,8 @@ class Vec2:
     return Vec2(func(self.x), func(self.y))
 
   def binary_map(self, other, *, func):
+    if isinstance(other, (tuple, list)):
+      other = Vec2(*other)
     if not isinstance(other, Vec2):
       if int(other) == other:
         other = int(other)
