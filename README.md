@@ -98,4 +98,4 @@ It is written in a way that it might be cross platform
 
 Example:
 
-    ./main.py -v --exp 0.8
+    ./main.py -v --exp 1

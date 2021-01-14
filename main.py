@@ -138,7 +138,7 @@ def main():
   arg_parser.add_argument(
     '-v', '--verbose', action='count', default=0, help="logging level. can be given multiple times")
   arg_parser.add_argument("--multiplier", type=float, default=None, help="Linear factor, default 1.")
-  arg_parser.add_argument("--exp", type=float, default=None, help="Exponential factor. Try 0.8 or so.")
+  arg_parser.add_argument("--exp", type=float, default=None, help="Exponential factor. Try 1 or so.")
   arg_parser.add_argument("--timeout", type=int, help="Will quite after this time (secs). For debugging.")
   args = arg_parser.parse_args()
   logging.basicConfig(

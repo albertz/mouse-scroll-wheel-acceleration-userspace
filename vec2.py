@@ -10,6 +10,8 @@ class Vec2:
     self.x, self.y = x, y
 
   def __repr__(self):
+    if isinstance(self.x, float) or isinstance(self.y, float):
+      return f"Vec2({self.x:.2f}, {self.y:.2f})"
     return f"Vec2({self.x}, {self.y})"
 
   def __bool__(self) -> bool:
