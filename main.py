@@ -80,6 +80,7 @@ class ScrollAccelerator:
         f"scroll user vel {abs_vel}"
         f" -> accel multiplier {m:.2f}, cur vel {cur_vel}, target vel {abs_vel * m}"
         f" -> scroll {scroll_}")
+      time.sleep(0.001)  # enforce some minimal sleep time before the next generated scroll
       if self._discrete_scroll_events and scroll_.int():
         # Scroll only by one. Once we get the next scroll event from that, we will again trigger the next.
         self._scroll(scroll_.sign())
