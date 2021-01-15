@@ -86,8 +86,8 @@ class ScrollAccelerator:
       # Amount of scrolling to add to get to target speed.
       scroll_ = vel * m - cur_vel
       (logging.debug if generated else logging.info)(
-        f"scroll user vel {abs_vel}"
-        f" -> accel multiplier {m:.2f}, cur vel {cur_vel}, target vel {abs_vel * m}"
+        f"scroll user vel {abs_vel:.2f}"
+        f" -> accel multiplier {m:.2f}, cur vel {cur_vel}, target vel {abs_vel * m:.2f}"
         f" -> scroll {scroll_}")
       if self._discrete_scroll_events:
         time.sleep(0.001)  # enforce some minimal sleep time before the next generated scroll
