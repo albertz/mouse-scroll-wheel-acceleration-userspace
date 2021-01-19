@@ -56,9 +56,8 @@ class ScrollAccelerator:
     self.mouse.scroll(delta.x, delta.y)
 
   def _on_scroll(self, x: int, y: int, dx: int, dy: int):
-    # We get user events and also generated events here,
-    # but we do not distinguish them anymore.
-    # However, we also kept track of how much scroll events we generated,
+    # We get user events and also generated events here.
+    # We kept track of how much scroll events we generated,
     # which allows us to estimate the user scroll velocity.
     pos = Vec2(x, y)
     delta = Vec2(dx, dy)
