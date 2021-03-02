@@ -89,8 +89,6 @@ and also to send out further scroll events.
 It is written in a way that it is cross platform.
 It even works on MacOSX in addition to the OS scroll acceleration,
 such that you can further increase the acceleration.
-(For the best experience on MacOSX, you probably want
-[this pynput PR](https://github.com/moses-palmer/pynput/pull/341).)
 
 
 ## Installation
