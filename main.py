@@ -6,6 +6,7 @@ import sys
 import argparse
 import time
 from vec2 import Vec2
+import common
 import logging
 from typing import List, Tuple, Union
 from pynput.mouse import Controller, Listener
@@ -142,17 +143,33 @@ def _timeout_handler(*_args):
   sys.exit(0)
 
 
+def _init_logging(verbose: int = 0):
+  logging.basicConfig(
+    level=max(1, logging.WARNING - verbose * 10),
+    format='%(asctime)s %(levelname)s: %(message)s')
+
+
 def main():
-  arg_parser = argparse.ArgumentParser()
+  arg_parser = argparse.ArgumentParser(common.app_name_human)
   arg_parser.add_argument(
     '-v', '--verbose', action='count', default=0, help="logging level. can be given multiple times")
   arg_parser.add_argument("--multiplier", type=float, default=None, help="Linear factor, default 1.")
   arg_parser.add_argument("--exp", type=float, default=None, help="Exponential factor. Try 1 or so.")
   arg_parser.add_argument("--timeout", type=int, help="Will quite after this time (secs). For debugging.")
   args = arg_parser.parse_args()
-  logging.basicConfig(
-    level=max(1, logging.WARNING - args.verbose * 10),
-    format='%(asctime)s %(levelname)s: %(message)s')
+  if common.config_fn.exists():
+    config_env = {}
+    code = compile(common.config_fn.read_text(), common.config_fn, "exec")
+    exec(code, config_env, config_env)
+    _init_logging(args.verbose or config_env.get("verbose", 0))
+    logging.info(f"Loaded config {common.config_fn}")
+    for key, value in args.__dict__.items():
+      if value is None and key in config_env:
+        args.__dict__[key] = config_env[key]
+        logging.info(f"Use config setting {key} = {config_env[key]}")
+  else:
+    _init_logging(args.verbose)
+    logging.warning(f"Config {common.config_fn} not found")
   if args.multiplier is None and args.exp is None:
     arg_parser.print_help()
     print()
