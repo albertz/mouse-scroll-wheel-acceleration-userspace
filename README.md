@@ -91,12 +91,30 @@ It even works on MacOSX in addition to the OS scroll acceleration,
 such that you can further increase the acceleration.
 
 
-## Installation
+## Dependencies
 
     pip install -r requirements.txt
 
 ## Usage
 
+You can customize the behavior with two numeric values.
 Example:
 
-    ./main.py -v --exp 1
+    ./main.py -v --exp 0.4 --multiplier 1.2
+
+## Installation
+
+If you found values that work for you, you can install
+the script as a systemd user unit (only on Linux):
+
+    ./install-daemon.py
+
+This will create a configuration file in
+`~/.config/mouse-scroll-wheel-accelerator/config.py`.
+Enter your preferred values there.
+
+The systemd unit can then be controlled like this:
+
+    systemctl enable --now --user mouse-scroll-wheel-accelerator
+    systemctl status --user mouse-scroll-wheel-accelerator
+    systemctl restart --user mouse-scroll-wheel-accelerator
