@@ -70,7 +70,7 @@ will use the old API.
 
 For reference, in MacOSX, this is deeply implemented in the kernel
 (see [here](https://stackoverflow.com/questions/44196338/where-is-mouse-cursor-movement-acceleration-and-scroll-wheel-acceleration-implem)),
-specifically in IOHIDFamily (e.g. see [here](https://github.com/aosm/IOHIDFamily/blob/d36f126e5b8d3183a037c453df7feedaba874553/IOHIDSystem/IOHIPointing.cpp)).
+specifically in IOHIDFamily (e.g. see [here](https://github.com/apple-oss-distributions/IOHIDFamily/blob/c56e1c1b2469d9956a585cc2518c8f0c51b5809d/IOHIDSystem/IOHIPointing.cpp#L25)).
 
 
 ## User space implementation
