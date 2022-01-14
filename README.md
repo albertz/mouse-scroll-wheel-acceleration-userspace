@@ -102,6 +102,19 @@ Example:
 
     ./main.py -v --exp 0.4 --multiplier 1.2
 
+## Settings
+
+
+* `exp`: the exponential factor
+* `multiplier`: additional multiplier. if this is >1, it means that every single scroll event will always get multiplied by this factor
+
+The formula is:
+
+```
+m = user_scroll_speed ** exp
+target_scroll_speed = user_scroll_speed * m * multiplier
+```
+
 ## Installation
 
 If you found values that work for you, you can install
