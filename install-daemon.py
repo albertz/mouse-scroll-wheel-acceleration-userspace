@@ -51,6 +51,9 @@ def setup(args):
   server_bin = Path(__file__).absolute().parent / 'main.py'
   out.write_text(_SystemdConfigTemplate.format(service_name=common.app_name_human, server=server_bin))
 
+  # https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace/issues/7
+  (systemd_user_dir / "default.target.wants").mkdir(parents=True, exist_ok=True)
+
   try:
     systemd('stop', unit_name, ignore_errors=True)  # ignore errors here if it wasn't running in the first place
     systemd('daemon-reload')
