@@ -60,8 +60,8 @@ As continuous scrolling and high resolution scrolling
 becomes more widely used, 
 corresponding support in libinput for
 [high-resolution scroll wheel support](https://gitlab.freedesktop.org/libinput/libinput/-/merge_requests/139)
-is being implemented right now (2021) but not merged yet.
-This is currently blocking any further development on the scroll acceleration.
+was merged now (2021).
+This was blocking any further development on the scroll acceleration.
 Which probably makes sense, as a clean high resolution API
 makes any implementation of scroll acceleration much cleaner.
 However, it is also slightly problematic,
