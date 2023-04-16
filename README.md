@@ -79,14 +79,15 @@ I just want to have that support now, on my desktop.
 
 How?
 
-We can just send X events,
+We can just send extra scroll events,
 and basically replicate the logic of my original xf86-input-mouse patch.
 
 This uses [pynput](https://pypi.org/project/pynput/)
 both to listen to scroll events,
 and also to send out further scroll events.
 
-It is written in a way that it is cross platform.
+Pynput supports all the major desktop platforms
+like X11, Wayland, MacOSX and Windows.
 It even works on MacOSX in addition to the OS scroll acceleration,
 such that you can further increase the acceleration.
 
