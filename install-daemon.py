@@ -7,6 +7,9 @@ Install as a systemd daemon service.
 
 Code based on this:
 https://github.com/karlicoss/promnesia/blob/197af911eb/setup_server
+Systemd refs:
+https://man.archlinux.org/man/systemd.special.7#Special_Passive_User_Units
+https://wiki.archlinux.org/title/Systemd/User
 
 Copyright 2019 Dmitrii Gerasimov, 2021 Albert Zeyer
 """
@@ -20,8 +23,11 @@ from subprocess import check_call, run
 _SystemdConfigTemplate = """
 [Unit]
 Description={service_name}
+PartOf=graphical-session.target
+
 [Install]
 WantedBy=default.target
+
 [Service]
 ExecStart={server}
 Type=simple
