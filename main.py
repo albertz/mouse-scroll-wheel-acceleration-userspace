@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 
 from __future__ import annotations
-import better_exchook
-import sys
+
 import argparse
-import time
-from vec2 import Vec2
-import common
 import logging
-from typing import List, Tuple, Union
-from pynput.mouse import Controller, Listener
 import signal
+import sys
+import time
+from typing import Tuple, Union
+
+import better_exchook
+from pynput.mouse import Controller, Listener
+
+import common
+from vec2 import Vec2
 
 
 class ScrollEvent:
@@ -26,9 +29,16 @@ class ScrollAccelerator:
     _VelocityEstimateMaxDeltaTime = 1.0
     _MaxScrollDelta = 100 if sys.platform != "darwin" else 1000
 
-    def __init__(self, multiplier: float = 1.0, exp: float = 0.0):
+    def __init__(
+        self,
+        multiplier: float = 1.0,
+        exp: float = 0.0,
+        threshold: float = 0.0,
+    ):
         if multiplier <= 1.0 and exp <= 0.0:
-            logging.warning(f"Not using acceleration with multiplier {multiplier} and exp {exp}")
+            logging.warning(
+                f"Not using acceleration with multiplier {multiplier} and exp {exp}"
+            )
         elif sys.platform == "darwin":
             logging.warning(
                 "On Darwin/MacOSX, the OS already does scroll acceleration. "
@@ -36,9 +46,10 @@ class ScrollAccelerator:
             )
         self.accel_factor = multiplier
         self.accel_factor_exp = exp
+        self.vel_threshold = threshold
         self.mouse = Controller()
         self.listener = Listener(on_scroll=self._on_scroll)
-        self._scroll_events = []  # type: List[ScrollEvent]
+        self._scroll_events = []  # type: list[ScrollEvent]
         self._outstanding_generated_scrolls = Vec2()
         self._discrete_scroll_events = sys.platform.startswith(
             "linux"
@@ -53,7 +64,10 @@ class ScrollAccelerator:
         delta = delta.round()  # in any case, backends anyway use int
         if not delta:
             return
-        if self._outstanding_generated_scrolls and self._outstanding_generated_scrolls.sign() != delta.sign():
+        if (
+            self._outstanding_generated_scrolls
+            and self._outstanding_generated_scrolls.sign() != delta.sign()
+        ):
             # Don't generate a new scroll if there is an outstanding, which was in another direction.
             return
         self._outstanding_generated_scrolls += delta
@@ -68,17 +82,27 @@ class ScrollAccelerator:
         generated = False
         if delta.sign() == self._outstanding_generated_scrolls.sign():
             generated = True
-        if self._discrete_scroll_events and delta not in self._DiscreteScrollEvents:
+        if (
+            self._discrete_scroll_events
+            and delta not in self._DiscreteScrollEvents
+        ):
             generated = False
         if generated:
             new_outstanding = self._outstanding_generated_scrolls - delta
-            if new_outstanding.sign() != self._outstanding_generated_scrolls.sign():
+            if (
+                new_outstanding.sign()
+                != self._outstanding_generated_scrolls.sign()
+            ):
                 new_outstanding = Vec2()
             self._outstanding_generated_scrolls = new_outstanding
-        self._scroll_events.append(ScrollEvent(pos, delta, generated=generated))
-        vel, gen_vel = self._estimate_current_scroll_velocity(self._scroll_events[-1].time)
+        self._scroll_events.append(
+            ScrollEvent(pos, delta, generated=generated)
+        )
+        vel, gen_vel = self._estimate_current_scroll_velocity(
+            self._scroll_events[-1].time
+        )
         cur_vel = vel + gen_vel
-        abs_vel = vel.l2()
+        abs_vel = vel.l2() - self.vel_threshold
         abs_vel_cur = cur_vel.l2()
         logging.debug(
             f"on scroll {(x, y)} {(dx, dy)}, gen {generated}, outstanding gen {self._outstanding_generated_scrolls},"
@@ -95,14 +119,18 @@ class ScrollAccelerator:
                 f" -> scroll {scroll_}"
             )
             if self._discrete_scroll_events:
-                time.sleep(0.001)  # enforce some minimal sleep time before the next generated scroll
+                time.sleep(
+                    1e-4
+                )  # enforce some minimal sleep time before the next generated scroll
             if self._discrete_scroll_events and scroll_.round():
                 # Scroll only by one. Once we get the next scroll event from that, we will again trigger the next.
                 self._scroll(scroll_.round().sign())
             else:
                 self._scroll(scroll_)
 
-    def _estimate_current_scroll_velocity(self, cur_time: float) -> Tuple[Vec2, Vec2]:
+    def _estimate_current_scroll_velocity(
+        self, cur_time: float
+    ) -> Tuple[Vec2, Vec2]:
         """
         We estimate the user speed, excluding generated scroll events,
         and separately only the generated scroll events.
@@ -134,7 +162,9 @@ class ScrollAccelerator:
             f = 1  # do not increase the estimate
         return d * f, gen * f
 
-    def _acceleration_scheme_get_scroll_multiplier(self, abs_vel: float) -> Union[int, float]:
+    def _acceleration_scheme_get_scroll_multiplier(
+        self, abs_vel: float
+    ) -> Union[int, float]:
         if abs_vel <= 1:
             return 1
 
@@ -149,17 +179,44 @@ def _timeout_handler(*_args):
 
 
 def _init_logging(verbose: int = 0):
-    logging.basicConfig(level=max(1, logging.WARNING - verbose * 10), format="%(asctime)s %(levelname)s: %(message)s")
+    logging.basicConfig(
+        level=max(1, logging.WARNING - verbose * 10),
+        format="%(asctime)s %(levelname)s: %(message)s",
+    )
 
 
 def main():
     arg_parser = argparse.ArgumentParser(common.app_name_human)
     arg_parser.add_argument(
-        "-v", "--verbose", action="count", default=0, help="logging level. can be given multiple times"
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="logging level. can be given multiple times",
     )
-    arg_parser.add_argument("--multiplier", type=float, default=None, help="Linear factor, default 1.")
-    arg_parser.add_argument("--exp", type=float, default=None, help="Exponential factor. Try 1 or so.")
-    arg_parser.add_argument("--timeout", type=int, help="Will quit after this time (secs). For debugging.")
+    arg_parser.add_argument(
+        "--multiplier",
+        type=float,
+        default=None,
+        help="Linear factor, default 1.",
+    )
+    arg_parser.add_argument(
+        "--exp",
+        type=float,
+        default=None,
+        help="Exponential factor. Try 1 or so.",
+    )
+    arg_parser.add_argument(
+        "--threshold",
+        type=float,
+        default=None,
+        help="If set, will only trigger acceleration if the velocity is above this threshold.",
+    )
+    arg_parser.add_argument(
+        "--timeout",
+        type=int,
+        help="Will quit after this time (secs). For debugging.",
+    )
     args = arg_parser.parse_args()
     if common.config_fn.exists():
         config_env = {}
@@ -183,10 +240,16 @@ def main():
         args.multiplier = 1.0
     if args.exp is None:
         args.exp = 0.0
+    if args.threshold is None:
+        args.threshold = 0.0
     if args.timeout:
         signal.signal(signal.SIGALRM, _timeout_handler)
         signal.alarm(args.timeout)
-    app = ScrollAccelerator(multiplier=args.multiplier, exp=args.exp)
+    app = ScrollAccelerator(
+        multiplier=args.multiplier,
+        exp=args.exp,
+        threshold=args.threshold,
+    )
     app.join()
 
 
