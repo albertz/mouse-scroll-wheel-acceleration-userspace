@@ -54,7 +54,7 @@ def setup(args):
     out = systemd_user_dir / unit_name
     print(f"Writing systemd config to {out}:")
 
-    server_bin = Path(__file__).absolute().parent / "main.py"
+    server_bin = Path(__file__).absolute().parent / "main.sh"
     out.write_text(
         _SystemdConfigTemplate.format(
             service_name=common.app_name_human, server=server_bin
