@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 import math
-from typing import Union
 import operator
+from typing import Union
 
 
 class Vec2:
