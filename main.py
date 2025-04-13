@@ -29,7 +29,12 @@ class ScrollAccelerator:
     _VelocityEstimateMaxDeltaTime = 1.0
     _MaxScrollDelta = 100 if sys.platform != "darwin" else 1000
 
-    def __init__(self, multiplier: float = 1.0, exp: float = 0.0):
+    def __init__(
+        self,
+        multiplier: float = 1.0,
+        exp: float = 0.0,
+        threshold: float = 0.0,
+    ):
         if multiplier <= 1.0 and exp <= 0.0:
             logging.warning(
                 f"Not using acceleration with multiplier {multiplier} and exp {exp}"
@@ -41,6 +46,7 @@ class ScrollAccelerator:
             )
         self.accel_factor = multiplier
         self.accel_factor_exp = exp
+        self.vel_threshold = threshold
         self.mouse = Controller()
         self.listener = Listener(on_scroll=self._on_scroll)
         self._scroll_events = []  # type: list[ScrollEvent]
@@ -96,7 +102,7 @@ class ScrollAccelerator:
             self._scroll_events[-1].time
         )
         cur_vel = vel + gen_vel
-        abs_vel = vel.l2()
+        abs_vel = vel.l2() - self.vel_threshold
         abs_vel_cur = cur_vel.l2()
         logging.debug(
             f"on scroll {(x, y)} {(dx, dy)}, gen {generated}, outstanding gen {self._outstanding_generated_scrolls},"
@@ -114,7 +120,7 @@ class ScrollAccelerator:
             )
             if self._discrete_scroll_events:
                 time.sleep(
-                    0.001
+                    1e-4
                 )  # enforce some minimal sleep time before the next generated scroll
             if self._discrete_scroll_events and scroll_.round():
                 # Scroll only by one. Once we get the next scroll event from that, we will again trigger the next.
@@ -201,6 +207,12 @@ def main():
         help="Exponential factor. Try 1 or so.",
     )
     arg_parser.add_argument(
+        "--threshold",
+        type=float,
+        default=None,
+        help="If set, will only trigger acceleration if the velocity is above this threshold.",
+    )
+    arg_parser.add_argument(
         "--timeout",
         type=int,
         help="Will quit after this time (secs). For debugging.",
@@ -228,10 +240,16 @@ def main():
         args.multiplier = 1.0
     if args.exp is None:
         args.exp = 0.0
+    if args.threshold is None:
+        args.threshold = 0.0
     if args.timeout:
         signal.signal(signal.SIGALRM, _timeout_handler)
         signal.alarm(args.timeout)
-    app = ScrollAccelerator(multiplier=args.multiplier, exp=args.exp)
+    app = ScrollAccelerator(
+        multiplier=args.multiplier,
+        exp=args.exp,
+        threshold=args.threshold,
+    )
     app.join()
 
 
