@@ -29,7 +29,7 @@ def good_default_options():
         return {"exp": 0.5}
     # All other common desktop platforms do not (Linux, Windows).
     # (Android does, but we don't expect that here...)
-    return {"multiplier": 0.5, "exp": 2}
+    return {"multiplier": 0.5, "exp": 1.5, "threshold": 2.0}
 
 
 def install_default_config():
