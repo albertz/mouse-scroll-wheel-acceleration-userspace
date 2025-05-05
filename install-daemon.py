@@ -73,6 +73,7 @@ def setup(args):
         print(
             "ERROR: `mswaa` not found in path. (hint: Have you installed it yet? Read the README.)"
         )
+        exit(1)
 
     out.write_text(
         _SystemdConfigTemplate.format(
