@@ -148,4 +148,4 @@ Setup:
     
 Exit the environment:
     
-    deactivate
+    exit # close the shell instance from `uv run bash`
