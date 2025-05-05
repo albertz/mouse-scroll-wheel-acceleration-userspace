@@ -12,8 +12,8 @@ from typing import Tuple, Union
 import better_exchook
 from pynput.mouse import Controller, Listener
 
-import common
-from vec2 import Vec2
+from . import common
+from .vec2 import Vec2
 
 
 class ScrollEvent:
@@ -82,22 +82,14 @@ class ScrollAccelerator:
         generated = False
         if delta.sign() == self._outstanding_generated_scrolls.sign():
             generated = True
-        if (
-            self._discrete_scroll_events
-            and delta not in self._DiscreteScrollEvents
-        ):
+        if self._discrete_scroll_events and delta not in self._DiscreteScrollEvents:
             generated = False
         if generated:
             new_outstanding = self._outstanding_generated_scrolls - delta
-            if (
-                new_outstanding.sign()
-                != self._outstanding_generated_scrolls.sign()
-            ):
+            if new_outstanding.sign() != self._outstanding_generated_scrolls.sign():
                 new_outstanding = Vec2()
             self._outstanding_generated_scrolls = new_outstanding
-        self._scroll_events.append(
-            ScrollEvent(pos, delta, generated=generated)
-        )
+        self._scroll_events.append(ScrollEvent(pos, delta, generated=generated))
         vel, gen_vel = self._estimate_current_scroll_velocity(
             self._scroll_events[-1].time
         )
@@ -128,9 +120,7 @@ class ScrollAccelerator:
             else:
                 self._scroll(scroll_)
 
-    def _estimate_current_scroll_velocity(
-        self, cur_time: float
-    ) -> Tuple[Vec2, Vec2]:
+    def _estimate_current_scroll_velocity(self, cur_time: float) -> Tuple[Vec2, Vec2]:
         """
         We estimate the user speed, excluding generated scroll events,
         and separately only the generated scroll events.

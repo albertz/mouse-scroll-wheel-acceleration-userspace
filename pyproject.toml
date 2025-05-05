@@ -1,3 +1,25 @@
+[project]
+name = "mswaa"
+version = "0.1.0"
+description = "Mouse scroll wheel acceleration in user space."
+readme = "README.md"
+authors = [
+  { name = "albertz", email = "albzey@gmail.com" }
+]
+requires-python = ">= 3.7"
+dependencies = [
+    "appdirs>=1.4.4",
+    "better-exchook>=1.20250422.203841",
+    "pynput>=1.8.1",
+]
+
+[project.scripts]
+mswaa = "mswaa:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [tool.black]
 line-length = 120
 target-version = ["py37"]

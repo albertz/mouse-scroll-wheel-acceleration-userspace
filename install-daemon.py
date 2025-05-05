@@ -18,7 +18,13 @@ import argparse
 from pathlib import Path
 from subprocess import check_call, run
 
-import common
+try:
+    from mswaa import common
+except ModuleNotFoundError:
+    print("[!] ERROR: `mswaa` module not found.")
+    print("[?] HELP: Install the package as instructed in the README`")
+    print()
+    raise
 
 _SystemdConfigTemplate = """
 [Unit]
@@ -43,6 +49,14 @@ def systemd(*args, ignore_errors=False):
     method(["systemctl", "--no-pager", "--user", *args])
 
 
+def get_mswaa_path():
+    import shutil
+
+    mswaa = shutil.which("mswaa")
+
+    return mswaa
+
+
 def setup(args):
     if not common.config_fn.exists():
         # We need some config, otherwise the service wont start.
@@ -54,7 +68,12 @@ def setup(args):
     out = systemd_user_dir / unit_name
     print(f"Writing systemd config to {out}:")
 
-    server_bin = Path(__file__).absolute().parent / "main.sh"
+    server_bin = get_mswaa_path()
+    if not server_bin:
+        print(
+            "ERROR: `mswaa` not found in path. (hint: Have you installed it yet? Read the README.)"
+        )
+
     out.write_text(
         _SystemdConfigTemplate.format(
             service_name=common.app_name_human, server=server_bin
@@ -62,9 +81,7 @@ def setup(args):
     )
 
     # https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace/issues/7
-    (systemd_user_dir / "default.target.wants").mkdir(
-        parents=True, exist_ok=True
-    )
+    (systemd_user_dir / "default.target.wants").mkdir(parents=True, exist_ok=True)
 
     try:
         systemd(
