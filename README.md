@@ -94,17 +94,16 @@ such that you can further increase the acceleration.
 
 ## Dependencies
 
-    pip install -r requirements.txt
+    pip install --user git+https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace
 
 ## Usage
 
 You can customize the behavior with two numeric values.
 Example:
 
-    ./main.py -v --exp 0.4 --multiplier 1.2
+    mswaa -v --exp 0.4 --multiplier 1.2
 
 ## Settings
-
 
 * `exp`: the exponential factor
 * `multiplier`: additional multiplier. if this is >1, it means that every single scroll event will always get multiplied by this factor
@@ -120,8 +119,9 @@ target_scroll_speed = user_scroll_speed * m * multiplier
 
 If you found values that work for you, you can install
 the script as a systemd user unit (only on Linux):
-
-    ./install-daemon.py
+    
+    git clone --depth 1 git@https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace mswaa
+    python3 ./mswaa/install-daemon.py
 
 This will create a configuration file in
 `~/.config/mouse-scroll-wheel-accelerator/config.py`.
@@ -132,3 +132,20 @@ The systemd unit can then be controlled like this:
     systemctl enable --now --user mouse-scroll-wheel-accelerator
     systemctl status --user mouse-scroll-wheel-accelerator
     systemctl restart --user mouse-scroll-wheel-accelerator
+
+## Development/Contributing
+
+Install `uv`:
+    
+    pip3 install --user uv
+
+Setup:
+    
+    git clone git@https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace
+    cd mouse-scroll-wheel-acceleration-userspace
+    uv sync
+    uv run bash # for activating venv basically
+    
+Exit the environment:
+    
+    exit # close the shell instance from `uv run bash`
