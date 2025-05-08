@@ -1,4 +1,4 @@
-import sys  # fix ugly errors from better_exchook
+import sys
 
 import better_exchook
 
