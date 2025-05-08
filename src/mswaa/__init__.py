@@ -9,7 +9,6 @@ import sys
 import time
 from typing import Tuple, Union
 
-import better_exchook
 from pynput.mouse import Controller, Listener
 
 from . import common
@@ -241,12 +240,3 @@ def main():
         threshold=args.threshold,
     )
     app.join()
-
-
-if __name__ == "__main__":
-    better_exchook.install()
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("KeyboardInterrupt")
-        sys.exit(1)
