@@ -5,9 +5,7 @@ from typing import Tuple, Union
 
 from pynput.mouse import Controller, Listener
 
-from .vec2 import Vec2
-
-__all__ = ("ScrollEvent", "ScrollAccelerator")
+from scroll_accelerator.vec2 import Vec2
 
 logger = logging.getLogger(__name__)
 

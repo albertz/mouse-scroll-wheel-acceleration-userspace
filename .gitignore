@@ -1,6 +1,5 @@
-/.idea
+.idea
 __pycache__
-.vscode/
-venv/
 .venv/
+.vscode/
 .ruff_cache/
