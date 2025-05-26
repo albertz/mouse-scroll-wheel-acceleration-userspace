@@ -65,7 +65,7 @@ class ScrollAccelerator:
         self._listener = Listener(on_scroll=self._on_scroll)
         self._scroll_events: list[ScrollEvent] = []
         self._outstanding_generated_scrolls = Vec2()
-        self._discrete_scroll_events = "linux" in sys.platform
+        self._discrete_scroll_events = sys.platform.startswith("linux")
 
         logger.info(
             f"ScrollAccelerator initialized with config: "
