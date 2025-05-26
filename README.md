@@ -59,7 +59,7 @@ or in xf86-input-libinput.
 A new proposal for libinput mouse wheel acceleration
 was opened [here](https://gitlab.freedesktop.org/libinput/libinput/-/issues/7).
 As continuous scrolling and high resolution scrolling
-becomes more widely used, 
+becomes more widely used,
 corresponding support in libinput for
 [high-resolution scroll wheel support](https://gitlab.freedesktop.org/libinput/libinput/-/merge_requests/139)
 was merged now (2021).
@@ -114,16 +114,19 @@ There are a few ways to install the application.
 ### Using pipx (recommended)
 
 To install the application, run:
-```bash    
+```bash
 pipx install git+https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace.git
 ```
-This will create a virtual environment for the application and install the application into it.
-You can then run the application from the command line using `scroll-accelerator` without
+This will create a virtual environment for the application and install the
+application into it.
+You can then run the application from the command line using
+`scroll-accelerator` without
 having to activate the virtual environment.
 
 ### Using a virtual environment
 
-You can also manually create a virtual environment (using any environment manager you prefer)
+You can also manually create a virtual environment (using any environment
+manager you prefer)
 and install the application into it.
 For example, using `venv`:
 ```bash
@@ -131,7 +134,8 @@ python -m venv .venv
 source .venv/bin/activate
 pip install git+https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace.git
 ```
-Note that you will need to activate the virtual environment before running the application
+Note that you will need to activate the virtual environment before running
+the application
 from the command line.
 
 ### Using your system Python/pip (not recommended)
@@ -140,9 +144,11 @@ If you want to install the application to your system, run:
 ```bash
 pip install [--user] git+https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace.git
 ```
-where `--user` is optional if you want to install the application to your user directory.
+where `--user` is optional if you want to install the application to your
+user directory.
 
-Note that this is NOT recommended, as some systems may not allow you to install the application directly to the system,
+Note that this is NOT recommended, as some systems may not allow you to
+install the application directly to the system,
 and forcing the installation to the system will likely break other packages.
 
 ## Usage
@@ -156,30 +162,38 @@ To run the application, run:
 ```bash
 scroll-accelerator [-v]
 ```
-where `-v` is optional and can be used to increase the verbosity of the application.
-Providing it multiple times (e.g. `-vvv`) will increase the verbosity even further.
+where `-v` is optional and can be used to increase the verbosity of the
+application.
+Providing it multiple times (e.g. `-vvv`) will increase the verbosity
+even further.
 
-You can customize the scroll behavior with the `--exp`, `--multiplier` and `--threshold` acceleration parameter options:
+You can customize the scroll behavior with the `--exp`, `--multiplier` and
+`--threshold` acceleration parameter options:
 ```bash
 scroll-accelerator --exp 0.4 --multiplier 1.2 --threshold 1.0
 ```
-See the [Acceleration parameters](#acceleration-parameters) section for more details about the acceleration parameters.
+See the [Acceleration parameters](#acceleration-parameters) section for more
+details about the acceleration parameters.
 
 
 ### Installing the daemon as a systemd user unit (Linux only)
 
-If you found values that work for you, you can install the application as a user-space, systemd daemon:
+If you found values that work for you, you can install the application as a
+user-space, systemd daemon:
 ```bash
 scroll-accelerator --install-daemon --exp 0.4 --multiplier 1.2 --threshold 1.0
 ```
 This will create and start a systemd user unit for the application.
-It will run the application in the background, automatically start it on boot,
+It will run the application in the background, automatically start it on
+boot,
 and also restart it if it crashes.
-This command also automatically saves the configuration to the file `~/.config/scroll-accelerator/config.yaml`.
+This command also automatically saves the configuration to the file
+`~/.config/scroll-accelerator/config.yaml`.
 
 ### Modifying the configuration
 
-To modify the configuration, you can use the `--save-config` option with at least one of the acceleration parameter options.
+To modify the configuration, you can use the `--save-config` option with at
+least one of the acceleration parameter options.
 
 For example, to change the multiplier 0.8, you can run:
 ```bash
@@ -187,7 +201,8 @@ scroll-accelerator --save-config --multiplier 0.8
 ```
 which will modify the configuration file to have a multiplier of 0.8.
 
-Note that if the daemon is already running, you will need to restart it for the changes to take effect:
+Note that if the daemon is already running, you will need to restart it for
+the changes to take effect:
 ```bash
 scroll-accelerator --restart-daemon
 ```
@@ -196,10 +211,12 @@ You can do both of these steps at once in one command by running:
 ```bash
 scroll-accelerator --restart-daemon --multiplier 0.8
 ```
-Note that the new config is automatically saved when using `--restart-daemon` or `--install-daemon` 
+Note that the new config is automatically saved when using `--restart-daemon`
+or `--install-daemon`
 and therefore the `--save-config` option is not needed.
 
-You can also modify the configuration by editing the file `~/.config/scroll-accelerator/config.yaml` directly.
+You can also modify the configuration by editing the file
+`~/.config/scroll-accelerator/config.yaml` directly.
 
 ### Stopping/uninstalling the daemon
 
@@ -207,13 +224,15 @@ To stop the daemon, you can use the `--stop-daemon` option.
 ```bash
 scroll-accelerator --stop-daemon
 ```
-This will stop the daemon temporarily, but it will still be restarted on boot.
+This will stop the daemon temporarily, but it will still be restarted on
+boot.
 
 To uninstall the daemon, you can use the `--uninstall-daemon` option.
 ```bash
 scroll-accelerator --uninstall-daemon
 ```
-This will stop the daemon and uninstall it. Note that this will not remove the configuration file.
+This will stop the daemon and uninstall it. Note that this will not remove
+the configuration file.
 
 ### Getting the status/log of the daemon
 
@@ -227,7 +246,7 @@ To get the log of the daemon, you can use the `--daemon-log` option.
 ```bash
 scroll-accelerator --daemon-log
 ```
-This will print the log of the daemon. 
+This will print the log of the daemon.
 
 Note that this will be fairly empty by default.
 To get more verbose output, you can use the `--daemon-verbosity` option
@@ -235,16 +254,21 @@ when installing or restarting the daemon:
 ```bash
 scroll-accelerator --restart-daemon --daemon-verbosity 1
 ```
-Then, after scrolling a few times, you can use `--daemon-log` again to see the log.
-It should now show a more verbose log, including the scroll events and the acceleration.
+Then, after scrolling a few times, you can use `--daemon-log` again to see
+the log.
+It should now show a more verbose log, including the scroll events and the
+acceleration.
 
 ## Acceleration parameters
 
-The following acceleration parameters determine the behavior of the scroll accelerator
+The following acceleration parameters determine the behavior of the scroll
+accelerator
 and can be set using the command line options or the configuration file.
 
-* `exp`: the exponential factor. This controls how fast the scroll speed increases.
-* `multiplier`: the scalar multiplier. This is multiplied by the scroll speed.
+* `exp`: the exponential factor. This controls how fast the scroll speed
+  increases.
+* `multiplier`: the scalar multiplier. This is multiplied by the scroll
+  speed.
 * `threshold`: the threshold. This controls the minimum scroll speed.
 
 The exact formula for computing the target scroll speed is:
@@ -260,7 +284,8 @@ To uninstall `scroll-accelerator`, first uninstall the daemon:
 scroll-accelerator --uninstall-daemon
 ```
 
-Then you can uninstall the application using whichever package manager was used to install it.
+Then you can uninstall the application using whichever package manager was
+used to install it.
 For pipx:
 ```bash
 pipx uninstall scroll-accelerator
@@ -281,7 +306,8 @@ rm -rf ~/.config/scroll-accelerator
 
 We welcome any and all contributions!
 
-We ask that you follow the guidelines below in order to make it easier to review and merge your changes.
+We ask that you follow the guidelines below in order to make it easier to
+review and merge your changes.
 
 ### Prerequisites
 
@@ -296,13 +322,16 @@ See the [Uninstallation](#uninstallation) section for instructions.
 #### Install `uv`
 
 We ask that you use `uv` to manage the project and its dependencies.
-`uv` is a modern, fast, and cross-platform Python package and project management tool.
-To install `uv`, see [here](https://docs.astral.sh/uv/getting-started/installation/). 
+`uv` is a modern, fast, and cross-platform Python package and project
+management tool.
+To install `uv`, see [here](https://docs.astral.sh/uv/getting-started/installation/).
 
 #### Fork the repository
 
-If you want to contribute and you do not have write access to the repository,
-you will need to fork the repository (create a copy of the repository in your own GitHub account).
+If you want to contribute and you do not have write access to the
+repository,
+you will need to fork the repository (create a copy of the repository in
+your own GitHub account).
 To fork, go to our [GitHub repository page](https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace)
 and click the "Fork" button in the top right corner.
 Follow the instructions to finish creating the fork.
@@ -315,12 +344,14 @@ git clone <your-fork-url> scroll-accelerator
 cd scroll-accelerator
 ```
 
-We've included a `uv.lock` file to lock the dependencies for development purposes.
+We've included a `uv.lock` file to lock the dependencies for development
+purposes.
 To install the package and its dependencies with uv, simply run:
 ```bash
 uv sync
 ```
-This will create a virtual environment and install the package and its dependencies
+This will create a virtual environment and install the package and its
+dependencies
 into it.
 
 To run the application, you can use the `uv run` command:
@@ -340,7 +371,8 @@ scroll-accelerator
 
 ### Pre-commit hooks
 
-We use `pre-commit` to run automated checks and formatting on the code before it is committed.
+We use `pre-commit` to run automated checks and formatting on the code
+before it is committed.
 To install the pre-commit hooks, run:
 ```bash
 uv run pre-commit install
