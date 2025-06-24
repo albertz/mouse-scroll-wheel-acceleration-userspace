@@ -128,7 +128,7 @@ def load_config() -> dict:
     default_config = get_default_config()
     for key in config.keys():
         if key not in default_config:
-            raise RuntimeError(f"Unknown config key in {CONFIG_FILE}: {key}")
+            raise ValueError(f"Unknown config key in {CONFIG_FILE}: {key}")
 
     return config
 
