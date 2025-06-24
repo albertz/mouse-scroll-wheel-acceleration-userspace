@@ -3,7 +3,7 @@ name = "scroll-accelerator"
 version = "0.1.0"
 description = "Mouse scroll wheel acceleration in user space."
 authors = [
-    { name = "albertz", email = "albzey@gmail.com" },
+    { name = "Albert Zeyer", email = "albzey@gmail.com" },
     { name = "Valmiki Kothare", email = "valmikikothare@gmail.com" },
     { name = "eeriemyxi", email = "eeriemyxi@gmail.com" },
 ]
