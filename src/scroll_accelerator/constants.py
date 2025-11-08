@@ -28,12 +28,14 @@ SYSTEMD_CONFIG_TEMPLATE = """
 [Unit]
 Description={service_description}
 PartOf=graphical-session.target
+After=graphical-session.target
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target
 
 [Service]
 ExecStart={executable_command}
-Type=simple
-Restart=always
+Type=exec
+Restart=on-failure
+RestartSec=1
 """
