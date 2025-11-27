@@ -1,3 +1,0 @@
-better_exchook
-pynput
-appdirs

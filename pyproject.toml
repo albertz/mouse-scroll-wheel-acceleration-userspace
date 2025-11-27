@@ -1,3 +1,26 @@
-[tool.black]
-line-length = 120
-target-version = ["py37"]
+[project]
+name = "scroll-accelerator"
+version = "0.1.0"
+description = "Mouse scroll wheel acceleration in user space."
+authors = [
+    { name = "Albert Zeyer", email = "albzey@gmail.com" },
+    { name = "Valmiki Kothare", email = "valmikikothare@gmail.com" },
+    { name = "eeriemyxi", email = "eeriemyxi@gmail.com" },
+]
+readme = "README.md"
+maintainers = [
+    { name = "albertz", email = "albzey@gmail.com" },
+    { name = "Valmiki Kothare", email = "valmikikothare@gmail.com" },
+]
+requires-python = ">= 3.8"
+dependencies = ["appdirs", "pynput", "pyyaml"]
+
+[dependency-groups]
+dev = ["pre-commit"]
+
+[project.scripts]
+scroll-accelerator = "scroll_accelerator.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

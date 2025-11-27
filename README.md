@@ -1,6 +1,8 @@
 # Mouse scroll wheel acceleration, implemented in user space
 
-## Background: Mouse scroll wheel acceleration
+## Background
+
+### Mouse scroll wheel acceleration
 
 What is that?
 
@@ -23,7 +25,7 @@ You might not even have noticed,
 as this feels very natural.
 
 
-## Non-MacOSX support
+### Non-MacOSX support
 
 Unfortunately, this is not supported yet in other desktop operating systems
 (Linux or Windows)
@@ -57,7 +59,7 @@ or in xf86-input-libinput.
 A new proposal for libinput mouse wheel acceleration
 was opened [here](https://gitlab.freedesktop.org/libinput/libinput/-/issues/7).
 As continuous scrolling and high resolution scrolling
-becomes more widely used, 
+becomes more widely used,
 corresponding support in libinput for
 [high-resolution scroll wheel support](https://gitlab.freedesktop.org/libinput/libinput/-/merge_requests/139)
 was merged now (2021).
@@ -73,7 +75,7 @@ For reference, in MacOSX, this is deeply implemented in the kernel
 specifically in IOHIDFamily (e.g. see [here](https://github.com/apple-oss-distributions/IOHIDFamily/blob/c56e1c1b2469d9956a585cc2518c8f0c51b5809d/IOHIDSystem/IOHIPointing.cpp#L25)).
 
 
-## User space implementation
+### User space implementation
 
 I just want to have that support now, on my desktop.
 
@@ -82,53 +84,244 @@ How?
 We can just send extra scroll events,
 and basically replicate the logic of my original xf86-input-mouse patch.
 
-This uses [pynput](https://pypi.org/project/pynput/)
+This uses [`pynput`](https://pypi.org/project/pynput/)
 both to listen to scroll events,
 and also to send out further scroll events.
 
-Pynput supports all the major desktop platforms
-like X11, Wayland, MacOSX and Windows.
+`pynput` supports all the major desktop platforms
+like Linux (Xorg), MacOSX and Windows.
 It even works on MacOSX in addition to the OS scroll acceleration,
 such that you can further increase the acceleration.
 
-
-## Dependencies
-
-    pip install -r requirements.txt
-
-## Usage
-
-You can customize the behavior with two numeric values.
-Example:
-
-    ./main.py -v --exp 0.4 --multiplier 1.2
-
-## Settings
+> [!NOTE]
+> This will not work on Wayland-based Linux systems. `pynput`'s default backend
+> uses Xorg (X11), and though it does support an alternativethe `uinput`
+> backend, this only works (as of Nov 2025) with keyboard input events, not mouse.
+> For alternative solutions, you may find
+> [`libinput`](https://freedesktop.org/wiki/Software/libinput/) to resolve
+> the issue of scroll speed, but as of writing, we are unaware of specific
+> scroll acceleration implementations using libinput.
 
 
-* `exp`: the exponential factor
-* `multiplier`: additional multiplier. if this is >1, it means that every single scroll event will always get multiplied by this factor
+## Prerequisites
 
-The formula is:
+### `pipx`/`uv`
 
-```
-m = user_scroll_speed ** exp
-target_scroll_speed = user_scroll_speed * m * multiplier
-```
+`pipx` or `uv` are recommended to install the application so that it does not
+interfere with other packages or environments.
+Both programs work by creating a virtual environment for the application,
+installing the application into it, and then making any executables available
+on your path.
+
+To install `pipx`, see [here](https://pipx.pypa.io/stable/installation/).
+
+To install `uv`, see [here](https://docs.astral.sh/uv/getting-started/installation/).
 
 ## Installation
 
-If you found values that work for you, you can install
-the script as a systemd user unit (only on Linux):
+There are a few ways to install the application.
 
-    ./install-daemon.py
+### Using `pipx`/`uv` (recommended)
 
-This will create a configuration file in
-`~/.config/mouse-scroll-wheel-accelerator/config.py`.
-Enter your preferred values there.
+To install the application using `pipx`, run:
+```bash
+pipx install git+https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace.git
+```
+Using `uv`, run:
+```bash
+uv tool install git+https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace.git
+```
+This will create a virtual environment for the application and install the
+application into it.
+You can then run the application from the command line using
+`scroll-accelerator` without having to activate the virtual environment.
 
-The systemd unit can then be controlled like this:
+### Using a virtual environment
 
-    systemctl enable --now --user mouse-scroll-wheel-accelerator
-    systemctl status --user mouse-scroll-wheel-accelerator
-    systemctl restart --user mouse-scroll-wheel-accelerator
+You can also manually create a virtual environment (using any environment
+manager you prefer)
+and install the application into it.
+For example, using `venv`:
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install git+https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace.git
+```
+Note that you will need to activate the virtual environment before running
+the application
+from the command line.
+
+### Using your system Python/pip (not recommended)
+
+If you want to install the application to your system, run:
+```bash
+pip install [--user] git+https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace.git
+```
+where `--user` is optional if you want to install the application to your
+user directory.
+
+Note that this is NOT recommended, as some systems may not allow you to
+install the application directly to the system,
+and forcing the installation to the system will likely break other packages.
+
+## Usage
+
+### Running the application
+
+If you installed the application manually to a virtual environment,
+activate the virtual environment first.
+
+To run the application, run:
+```bash
+scroll-accelerator [-v]
+```
+where `-v` is optional and can be used to increase the verbosity of the
+application.
+Providing it multiple times (e.g. `-vvv`) will increase the verbosity
+even further.
+
+You can customize the scroll behavior with the `--exp`, `--multiplier` and
+`--threshold` acceleration parameter options:
+```bash
+scroll-accelerator --exp 0.4 --multiplier 1.2 --threshold 1.0
+```
+See the [Acceleration parameters](#acceleration-parameters) section for more
+details about the acceleration parameters.
+
+
+### Installing the daemon as a systemd user unit (Linux only)
+
+If you found values that work for you, you can install the application as a
+user-space, systemd daemon:
+```bash
+scroll-accelerator --install-daemon --exp 0.4 --multiplier 1.2 --threshold 1.0
+```
+This will create and start a systemd user unit for the application.
+It will run the application in the background, automatically start it on
+boot,
+and also restart it if it crashes.
+This command also automatically saves the configuration to the file
+`~/.config/scroll-accelerator/config.yaml`.
+
+### Modifying the configuration
+
+To modify the configuration, you can use the `--save-config` option with at
+least one of the acceleration parameter options.
+
+For example, to change the multiplier 0.8, you can run:
+```bash
+scroll-accelerator --save-config --multiplier 0.8
+```
+which will modify the configuration file to have a multiplier of 0.8.
+
+Note that if the daemon is already running, you will need to restart it for
+the changes to take effect:
+```bash
+scroll-accelerator --restart-daemon
+```
+
+You can do both of these steps at once in one command by running:
+```bash
+scroll-accelerator --restart-daemon --multiplier 0.8
+```
+Note that the new config is automatically saved when using `--restart-daemon`
+or `--install-daemon`
+and therefore the `--save-config` option is not needed.
+
+You can also modify the configuration by editing the file
+`~/.config/scroll-accelerator/config.yaml` directly.
+
+### Stopping/uninstalling the daemon
+
+To stop the daemon, you can use the `--stop-daemon` option.
+```bash
+scroll-accelerator --stop-daemon
+```
+This will stop the daemon temporarily, but it will still be restarted on
+boot.
+
+To uninstall the daemon, you can use the `--uninstall-daemon` option.
+```bash
+scroll-accelerator --uninstall-daemon
+```
+This will stop the daemon and uninstall it. Note that this will not remove
+the configuration file.
+
+### Getting the status/log of the daemon
+
+To get the status of the daemon, you can use the `--daemon-status` option.
+```bash
+scroll-accelerator --daemon-status
+```
+This will print the status of the systemd unit associated with the daemon.
+
+To get the log of the daemon, you can use the `--daemon-log` option.
+```bash
+scroll-accelerator --daemon-log
+```
+This will print the log of the daemon.
+
+Note that this will be fairly empty by default.
+To get more verbose output, you can use the `--daemon-verbosity` option
+when installing or restarting the daemon:
+```bash
+scroll-accelerator --restart-daemon --daemon-verbosity 1
+```
+Then, after scrolling a few times, you can use `--daemon-log` again to see
+the log.
+It should now show a more verbose log, including the scroll events and the
+acceleration.
+
+## Acceleration parameters
+
+The following acceleration parameters determine the behavior of the scroll
+accelerator
+and can be set using the command line options or the configuration file.
+
+* `exp`: the exponential factor. This controls how fast the scroll speed
+  increases.
+* `multiplier`: the scalar multiplier. This is multiplied by the scroll
+  speed.
+* `threshold`: the threshold. This controls the minimum scroll speed.
+
+The exact formula for computing the target scroll speed is:
+```python
+m = (user_scroll_speed - threshold) ** exp
+target_scroll_speed = user_scroll_speed + m * multiplier
+```
+
+## Uninstallation
+
+To uninstall `scroll-accelerator`, first uninstall the daemon:
+```bash
+scroll-accelerator --uninstall-daemon
+```
+
+Then you can uninstall the application using whichever package manager was
+used to install it.
+For `pipx`:
+```bash
+pipx uninstall scroll-accelerator
+```
+
+For `uv`:
+```bash
+uv tool uninstall scroll-accelerator
+```
+
+For `pip`:
+```bash
+pip uninstall scroll-accelerator
+```
+
+Note that this will not remove the configuration file.
+To remove the configuration file, you can run:
+```bash
+rm -rf ~/.config/scroll-accelerator
+```
+
+## Contributing
+
+We welcome any and all contributions!
+
+To get started, please see our [Contribution Page](CONTRIBUTING.md).
