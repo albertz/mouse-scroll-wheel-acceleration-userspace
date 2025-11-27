@@ -12,7 +12,7 @@ maintainers = [
     { name = "albertz", email = "albzey@gmail.com" },
     { name = "Valmiki Kothare", email = "valmikikothare@gmail.com" },
 ]
-requires-python = ">= 3.7"
+requires-python = ">= 3.8"
 dependencies = ["appdirs", "pynput", "pyyaml"]
 
 [dependency-groups]
