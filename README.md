@@ -94,10 +94,10 @@ It even works on MacOSX in addition to the OS scroll acceleration,
 such that you can further increase the acceleration.
 
 > [!NOTE]
-> This will not work on Wayland-based Linux systems. `pynput`'s default backend 
-> uses Xorg (X11), and though it does support an alternativethe `uinput` 
-> backend, this only works (as of Nov 2025) with keyboard input events, not mouse. 
-> For alternative solutions, you may find 
+> This will not work on Wayland-based Linux systems. `pynput`'s default backend
+> uses Xorg (X11), and though it does support an alternativethe `uinput`
+> backend, this only works (as of Nov 2025) with keyboard input events, not mouse.
+> For alternative solutions, you may find
 > [`libinput`](https://freedesktop.org/wiki/Software/libinput/) to resolve
 > the issue of scroll speed, but as of writing, we are unaware of specific
 > scroll acceleration implementations using libinput.
@@ -107,7 +107,7 @@ such that you can further increase the acceleration.
 
 ### `pipx`/`uv`
 
-`pipx` or `uv` are recommended to install the application so that it does not 
+`pipx` or `uv` are recommended to install the application so that it does not
 interfere with other packages or environments.
 Both programs work by creating a virtual environment for the application,
 installing the application into it, and then making any executables available
@@ -325,4 +325,3 @@ rm -rf ~/.config/scroll-accelerator
 We welcome any and all contributions!
 
 To get started, please see our [Contribution Page](CONTRIBUTING.md).
-
