@@ -84,44 +84,57 @@ How?
 We can just send extra scroll events,
 and basically replicate the logic of my original xf86-input-mouse patch.
 
-This uses [pynput](https://pypi.org/project/pynput/)
+This uses [`pynput`](https://pypi.org/project/pynput/)
 both to listen to scroll events,
 and also to send out further scroll events.
 
-Pynput supports all the major desktop platforms
-like X11, Wayland, MacOSX and Windows.
+`pynput` supports all the major desktop platforms
+like Linux (Xorg), MacOSX and Windows.
 It even works on MacOSX in addition to the OS scroll acceleration,
 such that you can further increase the acceleration.
+
+> [!NOTE]
+> This will not work on Wayland-based Linux systems. `pynput`'s default backend 
+> uses Xorg (X11), and though it does support an alternativethe `uinput` 
+> backend, this only works (as of Nov 2025) with keyboard input events, not mouse. 
+> For alternative solutions, you may find 
+> [`libinput`](https://freedesktop.org/wiki/Software/libinput/) to resolve
+> the issue of scroll speed, but as of writing, we are unaware of specific
+> scroll acceleration implementations using libinput.
 
 
 ## Prerequisites
 
-### `pipx`
+### `pipx`/`uv`
 
-`pipx` is recommended to install the application so that it does not interfere
-with other packages or environments.
-It works by creating a virtual environment for the application,
+`pipx` or `uv` are recommended to install the application so that it does not 
+interfere with other packages or environments.
+Both programs work by creating a virtual environment for the application,
 installing the application into it, and then making any executables available
-in the system path.
+on your path.
 
 To install `pipx`, see [here](https://pipx.pypa.io/stable/installation/).
 
+To install `uv`, see [here](https://docs.astral.sh/uv/getting-started/installation/).
 
 ## Installation
 
 There are a few ways to install the application.
 
-### Using pipx (recommended)
+### Using `pipx`/`uv` (recommended)
 
-To install the application, run:
+To install the application using `pipx`, run:
 ```bash
 pipx install git+https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace.git
+```
+Using `uv`, run:
+```bash
+uv tool install git+https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace.git
 ```
 This will create a virtual environment for the application and install the
 application into it.
 You can then run the application from the command line using
-`scroll-accelerator` without
-having to activate the virtual environment.
+`scroll-accelerator` without having to activate the virtual environment.
 
 ### Using a virtual environment
 
@@ -286,9 +299,14 @@ scroll-accelerator --uninstall-daemon
 
 Then you can uninstall the application using whichever package manager was
 used to install it.
-For pipx:
+For `pipx`:
 ```bash
 pipx uninstall scroll-accelerator
+```
+
+For `uv`:
+```bash
+uv tool uninstall scroll-accelerator
 ```
 
 For `pip`:
@@ -302,113 +320,9 @@ To remove the configuration file, you can run:
 rm -rf ~/.config/scroll-accelerator
 ```
 
-## Development/Contributing
+## Contributing
 
 We welcome any and all contributions!
 
-We ask that you follow the guidelines below in order to make it easier to
-review and merge your changes.
+To get started, please see our [Contribution Page](CONTRIBUTING.md).
 
-### Prerequisites
-
-#### Uninstall the package (if applicable)
-
-If you already installed the package using `pipx` or some other method,
-it is highly recommended to uninstall it first.
-This will ensure that you are not using a version of the package that is not
-under development.
-See the [Uninstallation](#uninstallation) section for instructions.
-
-#### Install `uv`
-
-We ask that you use `uv` to manage the project and its dependencies.
-`uv` is a modern, fast, and cross-platform Python package and project
-management tool.
-To install `uv`, see [here](https://docs.astral.sh/uv/getting-started/installation/).
-
-#### Fork the repository
-
-If you want to contribute and you do not have write access to the
-repository,
-you will need to fork the repository (create a copy of the repository in
-your own GitHub account).
-To fork, go to our [GitHub repository page](https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace)
-and click the "Fork" button in the top right corner.
-Follow the instructions to finish creating the fork.
-
-### Setup
-
-Now that you have forked the repository, you can clone it using:
-```bash
-git clone <your-fork-url> scroll-accelerator
-cd scroll-accelerator
-```
-
-We've included a `uv.lock` file to lock the dependencies for development
-purposes.
-To install the package and its dependencies with uv, simply run:
-```bash
-uv sync
-```
-This will create a virtual environment and install the package and its
-dependencies
-into it.
-
-To run the application, you can use the `uv run` command:
-```bash
-uv run scroll-accelerator
-```
-
-Alternatively, you can first manually activate the virtual environment.
-```bash
-source .venv/bin/activate
-```
-
-You can then run the application as normal:
-```bash
-scroll-accelerator
-```
-
-### Pre-commit hooks
-
-We use `pre-commit` to run automated checks and formatting on the code
-before it is committed.
-To install the pre-commit hooks, run:
-```bash
-uv run pre-commit install
-```
-Now whenever you commit, the pre-commit hooks will run and check the code.
-If the code does not pass the checks, the commit will be rejected.
-Pre-commit may automatically fix some of the issues,
-but if any of the files have been modified, you will need to stage them again
-using `git add` and commit again.
-
-You can also run the checks manually without committing:
-```bash
-uv run pre-commit run --all-files
-```
-
-### Committing and pushing
-
-When you are satisfied with your changes, you can stage and commit them:
-```bash
-git add -A
-git commit -m "Your commit message"
-```
-or in one command:
-```bash
-git commit -am "Your commit message"
-```
-
-You can then push your changes to your fork:
-```bash
-git push
-```
-
-### Submitting a pull request
-
-Now that you have pushed your changes to your fork,
-you can submit a pull request to the main branch of the repository.
-To do this, go to the the [pull requests page](https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace/pulls)
-and click the "New pull request" button.
-Follow the instructions to submit the pull request.

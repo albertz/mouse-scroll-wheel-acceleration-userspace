@@ -10,7 +10,7 @@ from scroll_accelerator.vec2 import Vec2
 logger = logging.getLogger(__name__)
 
 
-def check_config(multiplier: float, exp: float, threshold: float):
+def check_config(*, multiplier: float, exp: float, threshold: float):
     if multiplier <= 0:
         raise ValueError("Multiplier must be greater than 0.")
     if exp < 0:
@@ -20,7 +20,7 @@ def check_config(multiplier: float, exp: float, threshold: float):
 
 
 class ScrollEvent:
-    def __init__(self, pos: Vec2, delta: Vec2, generated: bool):
+    def __init__(self, pos: Vec2, delta: Vec2, *, generated: bool):
         self.time = time.time()
         self.pos = pos
         self.delta = delta
@@ -42,6 +42,7 @@ class ScrollAccelerator:
 
     def __init__(
         self,
+        *,
         multiplier: float = 1.0,
         exp: float = 0.0,
         threshold: float = 0.0,
@@ -56,7 +57,7 @@ class ScrollAccelerator:
         For more details, try `scroll-accelerator --help` or see the README.md
         on GitHub (https://github.com/albertz/mouse-scroll-wheel-acceleration-userspace).
         """
-        check_config(multiplier, exp, threshold)
+        check_config(multiplier=multiplier, exp=exp, threshold=threshold)
 
         self.multiplier = multiplier
         self.exp = exp
@@ -80,9 +81,7 @@ class ScrollAccelerator:
         self._listener.start()
         self._listener.join()
 
-    def _estimate_current_scroll_velocity(
-        self, cur_time: float
-    ) -> Tuple[Vec2, Vec2]:
+    def _estimate_current_scroll_velocity(self, cur_time: float) -> Tuple[Vec2, Vec2]:
         """
         We estimate the user speed, excluding generated scroll events,
         and separately only the generated scroll events.
@@ -152,22 +151,14 @@ class ScrollAccelerator:
         generated = False
         if delta.sign() == self._outstanding_generated_scrolls.sign():
             generated = True
-        if (
-            self._discrete_scroll_events
-            and delta not in self._DiscreteScrollEvents
-        ):
+        if self._discrete_scroll_events and delta not in self._DiscreteScrollEvents:
             generated = False
         if generated:
             new_outstanding = self._outstanding_generated_scrolls - delta
-            if (
-                new_outstanding.sign()
-                != self._outstanding_generated_scrolls.sign()
-            ):
+            if new_outstanding.sign() != self._outstanding_generated_scrolls.sign():
                 new_outstanding = Vec2()
             self._outstanding_generated_scrolls = new_outstanding
-        self._scroll_events.append(
-            ScrollEvent(pos, delta, generated=generated)
-        )
+        self._scroll_events.append(ScrollEvent(pos, delta, generated=generated))
         user_vel, gen_vel = self._estimate_current_scroll_velocity(
             self._scroll_events[-1].time
         )
