@@ -7,20 +7,28 @@ What is that?
 It's the same as mouse cursor movement acceleration,
 but for the mouse scroll wheel.
 
-This makes esp sense for devices where scrolling is continuous,
+This makes esp. sense for devices where scrolling is continuous,
 such as the trackpad
 (but even if the scrolling is discrete, like other mouse, it makes sense).
 In any case you want to be able to scroll slowly
 (e.g. pixel by pixel, or maybe max only a couple of lines).
 If you are in a very long document / webpage,
 you also want to be able to scroll very fastly.
-It is not possible to have both slow and fast scrolling
-without acceleration.
-With acceleration, this becomes very natural.
+Scroll acceleration provides a very natural solution
+to allow for both slow/accurate and very fast scrolling.
+
+For example, visit some of these very long Wikipedia pages, and scroll quickly through them:
+
+* [Japanese conjugation](https://en.wikipedia.org/wiki/Japanese_conjugation)
+* [False or misleading statements by Donald Trump](https://en.wikipedia.org/wiki/False_or_misleading_statements_by_Donald_Trump)
+* [2020s](https://en.wikipedia.org/wiki/2020s)
+
+With scroll wheel acceleration, you can almost instantly go through it.
 
 If you have used MacOSX, you have that enabled.
 You might not even have noticed,
 as this feels very natural.
+Similarly you have that on iOS and Android.
 
 
 ## Non-MacOSX support
@@ -132,3 +140,8 @@ The systemd unit can then be controlled like this:
     systemctl enable --now --user mouse-scroll-wheel-accelerator
     systemctl status --user mouse-scroll-wheel-accelerator
     systemctl restart --user mouse-scroll-wheel-accelerator
+
+## Related
+
+* [makoConstruct/middle-good-scrolling (defter scrolling)](https://github.com/makoConstruct/middle-good-scrolling).
+  Press a button to use the mouse movement for scrolling.
